@@ -1,0 +1,342 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #111821;
+  --panel-2: #17212c;
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #edf3f8;
+  --muted: #9db0c3;
+  --green: #39ff14;
+  --yellow: #ffd400;
+  --red: #ff2b2b;
+  --blue: #4da3ff;
+  --shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  overflow: hidden;
+}
+
+.app-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, #0f1620 0%, #0b0f14 100%);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.topbar p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  min-width: 92px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.badge span {
+  display: block;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.badge small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.badge.green span {
+  color: var(--green);
+}
+
+.badge.yellow span {
+  color: var(--yellow);
+}
+
+.badge.red span {
+  color: var(--red);
+}
+
+.main-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  min-height: 0;
+}
+
+.sidebar {
+  background: #0e141c;
+  border-right: 1px solid var(--line);
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.camera-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.camera-item {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.camera-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.camera-item.active {
+  outline: 2px solid var(--blue);
+}
+
+.camera-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.camera-name {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.camera-location {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.state-pill {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #111;
+}
+
+.state-ok {
+  background: var(--green);
+}
+
+.state-off {
+  background: var(--yellow);
+}
+
+.state-error {
+  background: var(--red);
+  color: #fff;
+}
+
+.editor.hidden {
+  display: none;
+}
+
+.editor-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.editor-subtitle {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0c131a;
+  color: var(--text);
+  padding: 11px 12px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #1c8bff;
+  color: white;
+}
+
+.btn.secondary {
+  background: #293645;
+  color: white;
+}
+
+.map-wrap {
+  position: relative;
+  min-height: 0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.camera-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.camera-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.25), 0 0 14px rgba(255,255,255,0.12);
+}
+
+.marker-ok {
+  background: var(--green);
+  color: #111;
+}
+
+.marker-off {
+  background: var(--yellow);
+  color: #111;
+}
+
+.marker-error {
+  background: var(--red);
+  color: #fff;
+}
+
+.popup-title {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.popup-line {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
+}
+
+@media (max-width: 900px) {
+  body {
+    overflow: auto;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 58vh;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    max-height: none;
+  }
+
+  #map {
+    min-height: 58vh;
+  }
+}
