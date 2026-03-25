@@ -242,6 +242,17 @@ function selectCamera(cameraId) {
   renderCameraList();
 }
 
+function setCameraStatus(cameraId, status) {
+  const index = cameras.findIndex(c => c.id === cameraId);
+  if (index === -1) return;
+
+  cameras[index].estado = status;
+  cameras[index].observacion = "Actualizado manualmente";
+
+  saveCameras();
+  renderAll();
+}
+
 function flyToCamera(cameraId) {
   const camera = cameras.find(c => c.id === cameraId);
   if (!camera) return;
