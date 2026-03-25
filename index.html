@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estado Cámaras PTZ Santiago</title>
+
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>Estado Cámaras PTZ Santiago</h1>
+        <p>Monitoreo manual de operación</p>
+      </div>
+
+      <div class="summary">
+        <div class="badge green">
+          <span id="countOk">0</span>
+          <small>Operativas</small>
+        </div>
+        <div class="badge yellow">
+          <span id="countOff">0</span>
+          <small>Desactivadas</small>
+        </div>
+        <div class="badge red">
+          <span id="countError">0</span>
+          <small>Falla</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-layout">
+      <aside class="sidebar">
+        <div class="card">
+          <h2>Cámaras PTZ</h2>
+          <p class="muted">Selecciona una cámara para centrar el mapa y cambiar su estado.</p>
+          <div id="cameraList" class="camera-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Control manual</h2>
+          <div id="editorEmpty" class="muted">
+            Selecciona una cámara desde la lista o tocando su icono en el mapa.
+          </div>
+
+          <div id="editorPanel" class="editor hidden">
+            <div class="editor-title" id="editorName">PTZ</div>
+            <div class="editor-subtitle" id="editorLocation">Ubicación</div>
+
+            <label for="cameraStatus">Estado</label>
+            <select id="cameraStatus">
+              <option value="ok">Operativa</option>
+              <option value="off">Desactivada</option>
+              <option value="error">Falla</option>
+            </select>
+
+            <label for="cameraNotes">Observación</label>
+            <textarea id="cameraNotes" rows="4" placeholder="Ej: sin novedad, mantenimiento, sin señal, etc."></textarea>
+
+            <div class="editor-actions">
+              <button id="saveBtn" class="btn primary">Guardar cambios</button>
+              <button id="focusBtn" class="btn secondary">Ir a cámara</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="map-wrap">
+        <div id="map"></div>
+      </section>
+    </main>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="app.js"></script>
+</body>
+</html>
