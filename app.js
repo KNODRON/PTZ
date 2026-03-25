@@ -148,11 +148,29 @@ function createCameraIcon(status) {
 function getPopupHtml(camera) {
   return `
     <div class="popup-title">${camera.nombre}</div>
-    <div class="popup-line"><b>Ubicación:</b> ${camera.ubicacion}</div>
+
     <div class="popup-line"><b>Estado:</b> ${getStatusLabel(camera.estado)}</div>
-    <div class="popup-line"><b>Lat:</b> ${camera.lat.toFixed(6)}</div>
-    <div class="popup-line"><b>Lng:</b> ${camera.lng.toFixed(6)}</div>
-    <div class="popup-line"><b>Observación:</b> ${camera.observacion || "Sin observaciones"}</div>
+
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button onclick="setCameraStatus('${camera.id}','ok')" 
+        style="flex:1; padding:8px; border:none; border-radius:8px; background:#39ff14; font-weight:bold;">
+        🟢
+      </button>
+
+      <button onclick="setCameraStatus('${camera.id}','off')" 
+        style="flex:1; padding:8px; border:none; border-radius:8px; background:#ffd400; font-weight:bold;">
+        🟡
+      </button>
+
+      <button onclick="setCameraStatus('${camera.id}','error')" 
+        style="flex:1; padding:8px; border:none; border-radius:8px; background:#ff2b2b; color:white; font-weight:bold;">
+        🔴
+      </button>
+    </div>
+
+    <div class="popup-line" style="margin-top:10px;">
+      <b>Ubicación:</b> ${camera.ubicacion}
+    </div>
   `;
 }
 
