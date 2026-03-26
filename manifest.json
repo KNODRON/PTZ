@@ -1,10 +1,10 @@
 {
-  "name": "Estado Cámaras PTZ Santiago",
-  "short_name": "PTZ Santiago",
+  "name": "Control PTZ Operativo",
+  "short_name": "Control PTZ",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0b0f14",
-  "theme_color": "#0b0f14",
+  "background_color": "#eef3ee",
+  "theme_color": "#007a33",
   "lang": "es",
   "icons": [
     {
