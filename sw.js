@@ -1,10 +1,11 @@
-const CACHE_NAME = "ptz-santiago-cache-v1";
+const CACHE_NAME = "control-ptz-v3";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
+  "./firebase-config.js",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
