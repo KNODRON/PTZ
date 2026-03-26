@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estado Cámaras PTZ Santiago</title>
+  <title>Control PTZ | Monitoreo Operativo</title>
 
-  <meta name="theme-color" content="#0b0f14" />
+  <meta name="theme-color" content="#007a33" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png" />
 
@@ -18,76 +18,124 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <h1>Estado Cámaras PTZ Santiago</h1>
-        <p>Monitoreo manual de operación</p>
-      </div>
-
-      <div class="summary">
-        <div class="badge green">
-          <span id="countOk">0</span>
-          <small>Operativas</small>
-        </div>
-        <div class="badge yellow">
-          <span id="countOff">0</span>
-          <small>Desactivadas</small>
-        </div>
-        <div class="badge red">
-          <span id="countError">0</span>
-          <small>Falla</small>
+  <!-- LOGIN -->
+  <section id="loginScreen" class="screen screen-login">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-badge">📷</div>
+        <div>
+          <h1>Control PTZ</h1>
+          <p>Monitoreo operativo privado</p>
         </div>
       </div>
-    </header>
 
-    <main class="main-layout">
-      <aside class="sidebar">
-        <div class="card">
-          <h2>Cámaras PTZ</h2>
-          <p class="muted">Selecciona una cámara para centrar el mapa y cambiar su estado.</p>
-          <div id="cameraList" class="camera-list"></div>
-        </div>
+      <div class="form-group">
+        <label for="emailInput">Correo</label>
+        <input id="emailInput" type="email" placeholder="correo@dominio.cl" autocomplete="username" />
+      </div>
 
-        <div class="card">
-          <h2>Control manual</h2>
-          <div id="editorEmpty" class="muted">
-            Selecciona una cámara desde la lista o tocando su icono en el mapa.
+      <div class="form-group">
+        <label for="passwordInput">Contraseña</label>
+        <input id="passwordInput" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button id="loginBtn" class="btn btn-primary btn-full">Ingresar</button>
+
+      <div class="login-actions">
+        <button id="forgotPasswordBtn" class="btn btn-secondary btn-full">Cambiar / restablecer contraseña</button>
+      </div>
+
+      <p id="loginMessage" class="status-text"></p>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="appScreen" class="screen hidden">
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="mobilePanelBtn" class="mobile-panel-btn">☰</button>
+          <div>
+            <h1>Control PTZ Operativo</h1>
+            <p>Estado compartido en tiempo real</p>
           </div>
+        </div>
 
-          <div id="editorPanel" class="editor hidden">
-            <div class="editor-title" id="editorName">PTZ</div>
-            <div class="editor-subtitle" id="editorLocation">Ubicación</div>
-
-            <label for="cameraStatus">Estado</label>
-            <select id="cameraStatus">
-              <option value="ok">Operativa</option>
-              <option value="off">Desactivada</option>
-              <option value="error">Falla</option>
-            </select>
-
-            <label for="cameraNotes">Observación</label>
-            <textarea id="cameraNotes" rows="4" placeholder="Ej: sin novedad, mantenimiento, sin señal, etc."></textarea>
-
-            <div class="editor-actions">
-              <button id="saveBtn" class="btn primary">Guardar cambios</button>
-              <button id="focusBtn" class="btn secondary">Ir a cámara</button>
+        <div class="topbar-right">
+          <div class="summary">
+            <div class="badge green">
+              <span id="countOk">0</span>
+              <small>Operativas</small>
+            </div>
+            <div class="badge yellow">
+              <span id="countOff">0</span>
+              <small>Desactivadas</small>
+            </div>
+            <div class="badge red">
+              <span id="countError">0</span>
+              <small>Falla</small>
             </div>
           </div>
-        </div>
-      </aside>
 
-      <section class="map-wrap">
-        <div id="map"></div>
-      </section>
-    </main>
-  </div>
+          <div class="user-box">
+            <span id="userEmail">usuario</span>
+            <button id="changePasswordBtn" class="btn btn-secondary small">Cambiar contraseña</button>
+            <button id="logoutBtn" class="btn btn-danger small">Salir</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <aside id="sidebar" class="sidebar">
+          <div class="card">
+            <h2>Cámaras PTZ</h2>
+            <p class="muted">Toca una cámara para centrarla. En móvil puedes cambiar el estado desde el popup.</p>
+            <div id="cameraList" class="camera-list"></div>
+          </div>
+
+          <div class="card">
+            <h2>Detalle</h2>
+
+            <div id="editorEmpty" class="muted">
+              Selecciona una cámara desde el mapa o desde la lista.
+            </div>
+
+            <div id="editorPanel" class="editor hidden">
+              <div class="editor-title" id="editorName">PTZ</div>
+              <div class="editor-subtitle" id="editorLocation">Ubicación</div>
+              <div class="editor-subtitle" id="editorUpdated">Sin actualizaciones</div>
+
+              <label for="cameraStatus">Estado</label>
+              <select id="cameraStatus">
+                <option value="ok">Operativa</option>
+                <option value="off">Desactivada</option>
+                <option value="error">Falla</option>
+              </select>
+
+              <label for="cameraNotes">Observación</label>
+              <textarea id="cameraNotes" rows="4" placeholder="Ej: transmisión normal, mantenimiento, sin señal, etc."></textarea>
+
+              <div class="editor-actions">
+                <button id="focusBtn" class="btn btn-primary">Ir a cámara</button>
+              </div>
+
+              <p class="muted tiny">Los cambios se guardan automáticamente.</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="map-wrap">
+          <div id="map"></div>
+        </section>
+      </main>
+    </div>
+  </section>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
