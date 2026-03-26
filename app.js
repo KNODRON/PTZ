@@ -9,81 +9,11 @@ import {
 import {
   collection,
   doc,
-  getDocs,
+  getDoc,
   onSnapshot,
   serverTimestamp,
-  setDoc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-/* =========================
-   DATOS INICIALES
-========================= */
-const defaultCameras = [
-  {
-    id: "PTZ-02",
-    nombre: "PTZ 02",
-    ubicacion: "Santiago",
-    lat: -33.49267789129478,
-    lng: -70.6788036280333,
-    estado: "ok",
-    observacion: "Transmitiendo sin problemas"
-  },
-  {
-    id: "PTZ-13",
-    nombre: "PTZ 13",
-    ubicacion: "Santiago",
-    lat: -33.49436132382769,
-    lng: -70.67635967554472,
-    estado: "ok",
-    observacion: "Transmitiendo sin problemas"
-  },
-  {
-    id: "PTZ-08",
-    nombre: "PTZ 08",
-    ubicacion: "Santiago",
-    lat: -33.4673122418506,
-    lng: -70.71182755715962,
-    estado: "off",
-    observacion: "Desactivada manualmente"
-  },
-  {
-    id: "PTZ-16",
-    nombre: "PTZ 16",
-    ubicacion: "Santiago",
-    lat: -33.47288355137933,
-    lng: -70.72185068571619,
-    estado: "error",
-    observacion: "Sin señal"
-  },
-  {
-    id: "PTZ-09",
-    nombre: "PTZ 09",
-    ubicacion: "Santiago",
-    lat: -33.42292037784826,
-    lng: -70.74003025471728,
-    estado: "ok",
-    observacion: "Transmitiendo sin problemas"
-  },
-  {
-    id: "PTZ-ARICA-01",
-    nombre: "PTZ Arica 01",
-    ubicacion: "Arica",
-    lat: -18.4783,
-    lng: -70.3126,
-    estado: "ok",
-    observacion: "Agregar ubicación exacta después"
-  },
-  {
-    id: "PTZ-STGO-EXTRA-01",
-    nombre: "PTZ Santiago Extra 01",
-    ubicacion: "Santiago",
-    lat: -33.4489,
-    lng: -70.6693,
-    estado: "ok",
-    observacion: "Agregar ubicación exacta después"
-  }
-];
 
 /* =========================
    ESTADO GLOBAL
@@ -92,6 +22,8 @@ let cameras = [];
 let selectedCameraId = null;
 let markers = {};
 let unsubscribeCameras = null;
+let currentUserRole = "visor";
+let currentUserData = null;
 let noteSaveTimeout = null;
 
 /* =========================
@@ -204,48 +136,78 @@ function showLoginMessage(text, isError = false) {
   loginMessage.style.color = isError ? "#d91f26" : "#5d7365";
 }
 
-/* =========================
-   FIRESTORE
-========================= */
-async function seedIfEmpty() {
-  const snap = await getDocs(collection(db, "camaras"));
-  if (!snap.empty) return;
+function canEdit() {
+  return currentUserRole === "admin";
+}
 
-  for (const camera of defaultCameras) {
-    await setDoc(doc(db, "camaras", camera.id), {
-      ...camera,
-      updatedAt: serverTimestamp()
-    });
+function applyRoleUI() {
+  const editable = canEdit();
+  cameraStatus.disabled = !editable;
+  cameraNotes.disabled = !editable;
+  changePasswordBtn.disabled = false;
+}
+
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 920) {
+    sidebar.classList.remove("open");
   }
 }
 
+/* =========================
+   FIRESTORE
+========================= */
+async function loadCurrentUserProfile(uid) {
+  const ref = doc(db, "usuarios", uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    throw new Error("No existe documento de usuario en Firestore.");
+  }
+
+  currentUserData = snap.data();
+  currentUserRole = currentUserData.rol || "visor";
+  applyRoleUI();
+}
+
 async function updateCameraField(cameraId, data) {
+  const user = auth.currentUser;
+  if (!user || !canEdit()) return;
+
   await updateDoc(doc(db, "camaras", cameraId), {
     ...data,
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
+    updatedBy: user.email || "usuario"
   });
 }
 
 /* =========================
-   POPUPS Y ACCIONES
+   POPUPS
 ========================= */
 function getPopupHtml(camera) {
+  const actionButtons = canEdit()
+    ? `
+      <div class="popup-actions">
+        <button class="popup-btn ok" onclick="window.quickSetStatus('${camera.id}','ok')">🟢</button>
+        <button class="popup-btn off" onclick="window.quickSetStatus('${camera.id}','off')">🟡</button>
+        <button class="popup-btn error" onclick="window.quickSetStatus('${camera.id}','error')">🔴</button>
+      </div>
+    `
+    : `<div class="popup-line"><b>Modo:</b> solo visualización</div>`;
+
   return `
     <div class="popup-title">${camera.nombre}</div>
     <div class="popup-line"><b>Ubicación:</b> ${camera.ubicacion}</div>
     <div class="popup-line"><b>Estado:</b> ${getStatusLabel(camera.estado)}</div>
     <div class="popup-line"><b>Observación:</b> ${camera.observacion || "Sin observaciones"}</div>
     <div class="popup-line"><b>${formatUpdatedAt(camera.updatedAt)}</b></div>
-
-    <div class="popup-actions">
-      <button class="popup-btn ok" onclick="window.quickSetStatus('${camera.id}','ok')">🟢</button>
-      <button class="popup-btn off" onclick="window.quickSetStatus('${camera.id}','off')">🟡</button>
-      <button class="popup-btn error" onclick="window.quickSetStatus('${camera.id}','error')">🔴</button>
-    </div>
+    <div class="popup-line"><b>Actualizado por:</b> ${camera.updatedBy || "sistema"}</div>
+    ${actionButtons}
   `;
 }
 
 async function quickSetStatus(cameraId, status) {
+  if (!canEdit()) return;
+
   try {
     await updateCameraField(cameraId, {
       estado: status,
@@ -334,9 +296,11 @@ function updateEditor(camera) {
 
   editorName.textContent = camera.nombre;
   editorLocation.textContent = camera.ubicacion;
-  editorUpdated.textContent = formatUpdatedAt(camera.updatedAt);
+  editorUpdated.textContent = `${formatUpdatedAt(camera.updatedAt)} · por ${camera.updatedBy || "sistema"}`;
   cameraStatus.value = camera.estado;
   cameraNotes.value = camera.observacion || "";
+
+  applyRoleUI();
 }
 
 function selectCamera(cameraId) {
@@ -363,7 +327,7 @@ function flyToCamera(cameraId) {
    AUTO-GUARDADO
 ========================= */
 cameraStatus.addEventListener("change", async () => {
-  if (!selectedCameraId) return;
+  if (!selectedCameraId || !canEdit()) return;
 
   try {
     await updateCameraField(selectedCameraId, {
@@ -377,7 +341,7 @@ cameraStatus.addEventListener("change", async () => {
 });
 
 cameraNotes.addEventListener("input", () => {
-  if (!selectedCameraId) return;
+  if (!selectedCameraId || !canEdit()) return;
 
   clearTimeout(noteSaveTimeout);
   noteSaveTimeout = setTimeout(async () => {
@@ -403,12 +367,6 @@ focusBtn.addEventListener("click", () => {
 mobilePanelBtn.addEventListener("click", () => {
   sidebar.classList.toggle("open");
 });
-
-function closeSidebarOnMobile() {
-  if (window.innerWidth <= 920) {
-    sidebar.classList.remove("open");
-  }
-}
 
 /* =========================
    AUTH
@@ -476,12 +434,12 @@ logoutBtn.addEventListener("click", async () => {
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    loginScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
-    userEmail.textContent = user.email || "Usuario";
-
     try {
-      await seedIfEmpty();
+      await loadCurrentUserProfile(user.uid);
+
+      loginScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
+      userEmail.textContent = `${user.email || "Usuario"} · ${currentUserRole}`;
 
       if (unsubscribeCameras) unsubscribeCameras();
 
@@ -498,18 +456,21 @@ onAuthStateChanged(auth, async (user) => {
         cameras = temp;
         renderAll();
       });
+
+      setTimeout(() => map.invalidateSize(), 250);
     } catch (error) {
       console.error(error);
-      alert("Error conectando con Firestore. Revisa configuración y reglas.");
+      alert("Tu usuario no tiene perfil válido en Firestore o no está activo.");
+      await signOut(auth);
     }
-
-    setTimeout(() => map.invalidateSize(), 250);
   } else {
     if (unsubscribeCameras) {
       unsubscribeCameras();
       unsubscribeCameras = null;
     }
 
+    currentUserRole = "visor";
+    currentUserData = null;
     cameras = [];
     selectedCameraId = null;
     cameraLayer.clearLayers();
