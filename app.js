@@ -24,7 +24,10 @@ let markers = {};
 let unsubscribeCameras = null;
 let currentUserRole = "visor";
 let currentUserData = null;
-let noteSaveTimeout = null;
+
+/* NUEVO: control local de edición */
+let isEditingNotes = false;
+let notesDirty = false;
 
 /* =========================
    DOM LOGIN
@@ -180,6 +183,31 @@ async function updateCameraField(cameraId, data) {
   });
 }
 
+/* NUEVO: guardar observación de forma controlada */
+async function saveNotesIfNeeded() {
+  if (!selectedCameraId || !canEdit() || !notesDirty) return;
+
+  const newText = cameraNotes.value.trim();
+  const currentCamera = cameras.find(c => c.id === selectedCameraId);
+
+  if (!currentCamera) return;
+
+  if ((currentCamera.observacion || "") === newText) {
+    notesDirty = false;
+    return;
+  }
+
+  try {
+    await updateCameraField(selectedCameraId, {
+      observacion: newText
+    });
+    notesDirty = false;
+  } catch (error) {
+    console.error(error);
+    alert("No se pudo guardar la observación.");
+  }
+}
+
 /* =========================
    POPUPS
 ========================= */
@@ -209,9 +237,10 @@ async function quickSetStatus(cameraId, status) {
   if (!canEdit()) return;
 
   try {
+    const camera = cameras.find(c => c.id === cameraId);
     await updateCameraField(cameraId, {
       estado: status,
-      observacion: "Actualización manual"
+      observacion: camera?.observacion || ""
     });
   } catch (error) {
     console.error(error);
@@ -235,7 +264,8 @@ function renderMarkers() {
 
     marker.bindPopup(getPopupHtml(camera));
 
-    marker.on("click", () => {
+    marker.on("click", async () => {
+      await saveNotesIfNeeded();
       selectCamera(camera.id);
     });
 
@@ -258,7 +288,8 @@ function renderCameraList() {
       <div class="camera-location">${camera.ubicacion}</div>
     `;
 
-    item.addEventListener("click", () => {
+    item.addEventListener("click", async () => {
+      await saveNotesIfNeeded();
       selectCamera(camera.id);
       flyToCamera(camera.id);
       closeSidebarOnMobile();
@@ -298,7 +329,12 @@ function updateEditor(camera) {
   editorLocation.textContent = camera.ubicacion;
   editorUpdated.textContent = `${formatUpdatedAt(camera.updatedAt)} · por ${camera.updatedBy || "sistema"}`;
   cameraStatus.value = camera.estado;
-  cameraNotes.value = camera.observacion || "";
+
+  /* IMPORTANTE: si estoy escribiendo, no me pises el texto */
+  if (!isEditingNotes) {
+    cameraNotes.value = camera.observacion || "";
+    notesDirty = false;
+  }
 
   applyRoleUI();
 }
@@ -308,6 +344,8 @@ function selectCamera(cameraId) {
   const camera = cameras.find(c => c.id === cameraId);
   if (!camera) return;
 
+  isEditingNotes = false;
+  notesDirty = false;
   updateEditor(camera);
   renderCameraList();
 }
@@ -324,15 +362,17 @@ function flyToCamera(cameraId) {
 }
 
 /* =========================
-   AUTO-GUARDADO
+   AUTO-GUARDADO CORREGIDO
 ========================= */
 cameraStatus.addEventListener("change", async () => {
   if (!selectedCameraId || !canEdit()) return;
 
   try {
+    const currentCamera = cameras.find(c => c.id === selectedCameraId);
+
     await updateCameraField(selectedCameraId, {
       estado: cameraStatus.value,
-      observacion: cameraNotes.value.trim() || "Actualización manual"
+      observacion: currentCamera?.observacion || ""
     });
   } catch (error) {
     console.error(error);
@@ -340,22 +380,34 @@ cameraStatus.addEventListener("change", async () => {
   }
 });
 
-cameraNotes.addEventListener("input", () => {
-  if (!selectedCameraId || !canEdit()) return;
-
-  clearTimeout(noteSaveTimeout);
-  noteSaveTimeout = setTimeout(async () => {
-    try {
-      await updateCameraField(selectedCameraId, {
-        observacion: cameraNotes.value.trim()
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }, 700);
+cameraNotes.addEventListener("focus", () => {
+  if (!canEdit()) return;
+  isEditingNotes = true;
 });
 
-focusBtn.addEventListener("click", () => {
+cameraNotes.addEventListener("input", () => {
+  if (!canEdit()) return;
+  notesDirty = true;
+});
+
+cameraNotes.addEventListener("blur", async () => {
+  if (!canEdit()) return;
+  await saveNotesIfNeeded();
+  isEditingNotes = false;
+});
+
+cameraNotes.addEventListener("keydown", async (e) => {
+  if (!canEdit()) return;
+
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    await saveNotesIfNeeded();
+    cameraNotes.blur();
+  }
+});
+
+focusBtn.addEventListener("click", async () => {
+  await saveNotesIfNeeded();
   if (selectedCameraId) {
     flyToCamera(selectedCameraId);
   }
@@ -477,6 +529,8 @@ onAuthStateChanged(auth, async (user) => {
     cameraList.innerHTML = "";
     editorPanel.classList.add("hidden");
     editorEmpty.classList.remove("hidden");
+    isEditingNotes = false;
+    notesDirty = false;
 
     appScreen.classList.add("hidden");
     loginScreen.classList.remove("hidden");
