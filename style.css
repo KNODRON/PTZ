@@ -498,4 +498,64 @@ textarea {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  @media (max-width: 768px) {
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .topbar h1 {
+    font-size: 18px;
+  }
+
+  .topbar p {
+    font-size: 12px;
+  }
+
+  .summary {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+
+  .badge {
+    flex: 1;
+    padding: 8px;
+    min-width: unset;
+  }
+
+  .badge span {
+    font-size: 16px;
+  }
+
+  .user-box {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  #userEmail {
+    font-size: 12px;
+    width: 100%;
+  }
+
+  .btn.small {
+    width: 100%;
+  }
+
+  /* 🔥 MAPA MÁS GRANDE */
+  #map {
+    height: calc(100vh - 180px);
+  }
+
+  /* SIDEBAR tipo overlay */
+  .sidebar {
+    top: 120px;
+    height: calc(100vh - 120px);
+  }
 }
