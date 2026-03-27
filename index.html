@@ -52,41 +52,49 @@
   <!-- APP -->
   <section id="appScreen" class="screen hidden">
     <div class="app-shell">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button id="mobilePanelBtn" class="mobile-panel-btn">☰</button>
-          <div>
-            <h1>Control PTZ Operativo</h1>
-            <p>Estado compartido de las cámaras en tiempo real</p>
-          </div>
-        </div>
+<header class="topbar">
+  <div class="topbar-left">
+    <button id="mobilePanelBtn" class="mobile-panel-btn">☰</button>
+    <div class="topbar-title-wrap">
+      <h1>Control PTZ Operativo</h1>
+      <p>Estado compartido en tiempo real</p>
+    </div>
+  </div>
 
-        <div class="topbar-right">
-          <div class="summary">
-            <div class="badge green">
-              <span id="countOk">0</span>
-              <small>Operativas</small>
-            </div>
-            <div class="badge yellow">
-              <span id="countOff">0</span>
-              <small>Desactivadas</small>
-            </div>
-            <div class="badge red">
-              <span id="countError">0</span>
-              <small>Falla</small>
-            </div>
-          </div>
+  <div class="topbar-right desktop-only">
+    <div class="summary">
+      <div class="badge green">
+        <span id="countOk">0</span>
+        <small>Operativas</small>
+      </div>
+      <div class="badge yellow">
+        <span id="countOff">0</span>
+        <small>Desactivadas</small>
+      </div>
+      <div class="badge red">
+        <span id="countError">0</span>
+        <small>Falla</small>
+      </div>
+    </div>
 
-          <div class="user-box">
-            <span id="userEmail">usuario</span>
-            <button id="changePasswordBtn" class="btn btn-secondary small">Cambiar contraseña</button>
-            <button id="logoutBtn" class="btn btn-danger small">Salir</button>
-          </div>
-        </div>
-      </header>
+    <div class="user-box">
+      <span id="userEmail">usuario</span>
+      <button id="changePasswordBtn" class="btn btn-secondary small">Cambiar contraseña</button>
+      <button id="logoutBtn" class="btn btn-danger small">Salir</button>
+    </div>
+  </div>
+</header>
 
       <main class="main-layout">
         <aside id="sidebar" class="sidebar">
+          <div class="card mobile-session-card">
+            <h2>Sesión</h2>
+            <div class="mobile-session-info">
+              <div id="mobileUserEmail" class="mobile-user-email">usuario</div>
+              <button id="mobileChangePasswordBtn" class="btn btn-secondary btn-full">Cambiar contraseña</button>
+              <button id="mobileLogoutBtn" class="btn btn-danger btn-full">Salir</button>
+            </div>
+          </div>  
           <div class="card">
             <h2>Cámaras PTZ</h2>
             <p class="muted">Tocar una cámara para centrarla.</p>
@@ -124,6 +132,19 @@
         </aside>
 
         <section class="map-wrap">
+          <div class="mobile-floating-top">
+            <div class="mobile-summary-pill">
+              <span class="pill ok"><b id="mCountOk">0</b> OK</span>
+              <span class="pill off"><b id="mCountOff">0</b> OFF</span>
+              <span class="pill err"><b id="mCountError">0</b> Falla</span>
+            </div>
+          </div>
+
+          <div class="floating-actions">
+            <button id="fabMenu" class="fab fab-main" title="Abrir panel">☰</button>
+            <button id="fabFocus" class="fab" title="Ir a cámara seleccionada">⌖</button>
+          </div>
+
           <div id="map"></div>
         </section>
       </main>
