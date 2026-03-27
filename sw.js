@@ -1,4 +1,4 @@
-const CACHE_NAME = "control-ptz-v4";
+const CACHE_NAME = "control-ptz-v5";
 
 const FILES_TO_CACHE = [
   "./",
