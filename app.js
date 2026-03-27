@@ -63,6 +63,18 @@ const cameraStatus = document.getElementById("cameraStatus");
 const cameraNotes = document.getElementById("cameraNotes");
 const focusBtn = document.getElementById("focusBtn");
 
+
+const mobileUserEmail = document.getElementById("mobileUserEmail");
+const mobileChangePasswordBtn = document.getElementById("mobileChangePasswordBtn");
+const mobileLogoutBtn = document.getElementById("mobileLogoutBtn");
+
+const mCountOk = document.getElementById("mCountOk");
+const mCountOff = document.getElementById("mCountOff");
+const mCountError = document.getElementById("mCountError");
+
+const fabMenu = document.getElementById("fabMenu");
+const fabFocus = document.getElementById("fabFocus");
+
 /* =========================
    MAPA
 ========================= */
@@ -300,9 +312,17 @@ function renderCameraList() {
 }
 
 function updateSummary() {
-  countOk.textContent = cameras.filter(c => c.estado === "ok").length;
-  countOff.textContent = cameras.filter(c => c.estado === "off").length;
-  countError.textContent = cameras.filter(c => c.estado === "error").length;
+  const ok = cameras.filter(c => c.estado === "ok").length;
+  const off = cameras.filter(c => c.estado === "off").length;
+  const error = cameras.filter(c => c.estado === "error").length;
+
+  countOk.textContent = ok;
+  countOff.textContent = off;
+  countError.textContent = error;
+
+  if (mCountOk) mCountOk.textContent = ok;
+  if (mCountOff) mCountOff.textContent = off;
+  if (mCountError) mCountError.textContent = error;
 }
 
 function renderAll() {
@@ -420,6 +440,21 @@ mobilePanelBtn.addEventListener("click", () => {
   sidebar.classList.toggle("open");
 });
 
+if (fabMenu) {
+  fabMenu.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+  });
+}
+
+if (fabFocus) {
+  fabFocus.addEventListener("click", async () => {
+    await saveNotesIfNeeded();
+    if (selectedCameraId) {
+      flyToCamera(selectedCameraId);
+    }
+  });
+}
+
 /* =========================
    AUTH
 ========================= */
@@ -459,6 +494,31 @@ forgotPasswordBtn.addEventListener("click", async () => {
   }
 });
 
+mobileChangePasswordBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user?.email) {
+    alert("No hay un usuario autenticado.");
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, user.email);
+    alert(`Se envió un correo de cambio/restablecimiento a ${user.email}`);
+  } catch (error) {
+    console.error(error);
+    alert("No se pudo enviar el correo de cambio de contraseña.");
+  }
+});
+
+mobileLogoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error(error);
+    alert("No se pudo cerrar sesión.");
+  }
+});
+
 changePasswordBtn.addEventListener("click", async () => {
   const user = auth.currentUser;
   if (!user?.email) {
@@ -491,7 +551,9 @@ onAuthStateChanged(auth, async (user) => {
 
       loginScreen.classList.add("hidden");
       appScreen.classList.remove("hidden");
-      userEmail.textContent = `${user.email || "Usuario"} · ${currentUserRole}`;
+      const sessionText = `${user.email || "Usuario"} · ${currentUserRole}`;
+      userEmail.textContent = sessionText;
+      if (mobileUserEmail) mobileUserEmail.textContent = sessionText;
 
       if (unsubscribeCameras) unsubscribeCameras();
 
